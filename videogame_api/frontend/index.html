@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Videojuegos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0e0e0e;
+            color: #ffffff;
+        }
+        .xbox-green {
+            background-color: #107C10;
+            color: #ffffff;
+        }
+        .xbox-green:hover {
+            background-color: #0e6c0e;
+        }
+        .form-control, .table {
+            background-color: #1d1d1d;
+            color: #ffffff;
+            border-color: #2c2c2c;
+        }
+        .form-control::placeholder {
+            color: #bdbdbd;
+        }
+        .card {
+            background-color: #bdbdbd;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container py-4">
+    <h1 class="text-center mb-4">Mis videojuegos</h1>
+
+    <div class="card p-4 mb-4">
+        <h5>Agregar nuevo videojuego</h5>
+        <input type="text" id="titulo" class="form-control mb-2" placeholder="Título">
+        <input type="text" id="consola" class="form-control mb-2" placeholder="Consola">
+        <input type="number" id="precio" class="form-control mb-2" placeholder="Precio">
+        <input type="number" id="stock" class="form-control mb-2" placeholder="Stock">
+        <button class="btn xbox-green me-2" onclick="guardarVideojuego()">Guardar</button>
+        <button class="btn btn-secondary" onclick="limpiarFormulario()">Cancelar</button>
+    </div>
+
+    <div class="mb-3">
+        <input type="text" id="busqueda" class="form-control" placeholder="Buscar por título o consola" oninput="buscarVideojuego()">
+        <button class="btn btn-light mt-2" onclick="limpiarBusqueda()">Limpiar búsqueda</button>
+    </div>
+
+    <button class="btn xbox-green mb-3" onclick="cargarVideojuegos()">🔄 Cargar videojuegos</button>
+
+    <table class="table table-dark table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Consola</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="videojuegos"></tbody>
+    </table>
+</div>
+
+<script>
+    const API = "http://127.0.0.1:8000/videojuegos/";
+
+    async function guardarVideojuego() {
+        const titulo = document.getElementById("titulo").value;
+        const consola = document.getElementById("consola").value;
+        const precio = parseFloat(document.getElementById("precio").value);
+        const stock = parseInt(document.getElementById("stock").value);
+
+        const response = await fetch(API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ titulo, consola, precio, stock }),
+        });
+
+        if (response.ok) {
+            alert("Videojuego guardado correctamente");
+            limpiarFormulario();
+            cargarVideojuegos();
+        } else {
+            alert("Hubo un error al guardar el videojuego.");
+        }
+    }
+
+    async function cargarVideojuegos() {
+        const response = await fetch(API);
+        const juegos = await response.json();
+        mostrarJuegos(juegos);
+    }
+
+    function mostrarJuegos(juegos) {
+        const contenedor = document.getElementById("videojuegos");
+        contenedor.innerHTML = "";
+        juegos.forEach(juego => {
+            const fila = document.createElement("tr");
+            fila.innerHTML = `
+                <td>${juego.id}</td>
+                <td>${juego.titulo}</td>
+                <td>${juego.consola}</td>
+                <td>$${juego.precio}</td>
+                <td>${juego.stock}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning me-1" onclick="editar(${juego.id})">✏️</button>
+                    <button class="btn btn-sm btn-danger" onclick="eliminar(${juego.id})">🗑️</button>
+                </td>
+            `;
+            contenedor.appendChild(fila);
+        });
+    }
+
+    function limpiarFormulario() {
+        document.getElementById("titulo").value = "";
+        document.getElementById("consola").value = "";
+        document.getElementById("precio").value = "";
+        document.getElementById("stock").value = "";
+    }
+
+    async function eliminar(id) {
+        if (!confirm("¿Estás seguro de eliminar este videojuego?")) return;
+        const response = await fetch(API + id, { method: "DELETE" });
+        if (response.ok) {
+            alert("Videojuego eliminado");
+            cargarVideojuegos();
+        }
+    }
+
+    function buscarVideojuego() {
+        const filtro = document.getElementById("busqueda").value.toLowerCase();
+        const filas = document.querySelectorAll("#videojuegos tr");
+
+        filas.forEach(fila => {
+            const titulo = fila.children[1].textContent.toLowerCase();
+            const consola = fila.children[2].textContent.toLowerCase();
+            fila.style.display = (titulo.includes(filtro) || consola.includes(filtro)) ? "" : "none";
+        });
+    }
+
+    function limpiarBusqueda() {
+        document.getElementById("busqueda").value = "";
+        buscarVideojuego();
+    }
+
+    cargarVideojuegos();
+</script>
+</body>
+</html>
