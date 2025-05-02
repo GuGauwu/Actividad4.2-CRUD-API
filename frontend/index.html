@@ -6,100 +6,91 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-    background-color: #ffffff;
-    color: #ffffff;
-    font-family: 'Segoe UI', sans-serif;
-    margin: 0;
-    padding: 20px;
-}
+            background-color: #ffffff;
+            color: #ffffff;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
 
-h1 {
-    text-align: center;
-    color: #2ecc71;
-}
+        h1 {
+            text-align: center;
+            color: #2ecc71;
+        }
 
-.form-container {
-    background-color: #2a2a40;
-    padding: 20px;
-    border-radius: 10px;
-    max-width: 600px;
-    margin: 0 auto 20px;
-}
+        .form-container {
+            background-color: #2a2a40;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: 0 auto 20px;
+        }
 
-input[type="text"], input[type="number"] {
-    width: 100%;
-    padding: 10px;
-    margin: 8px 0;
-    background-color: #333;
-    border: 1px solid #555;
-    border-radius: 5px;
-    color: #fff;
-}
+        input[type="text"], input[type="number"], .form-control {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            background-color: white !important;
+            border: 1px solid #555;
+            border-radius: 5px;
+            color: black !important;
+        }
 
-button {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border: none;
-    border-radius: 5px;
-    font-weight: bold;
-    cursor: pointer;
-}
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-.btn-save {
-    background-color: #2ecc71;
-    color: white;
-}
+        .btn-save {
+            background-color: #2ecc71;
+            color: white;
+        }
 
-.btn-cancel {
-    background-color: #7f8c8d;
-    color: white;
-}
+        .btn-cancel {
+            background-color: #7f8c8d;
+            color: white;
+        }
 
-.btn-delete {
-    background-color: #e74c3c;
-    color: white;
-}
+        .btn-delete {
+            background-color: #e74c3c;
+            color: white;
+        }
 
-.btn-edit {
-    background-color: #f1c40f;
-    color: black;
-}
+        .btn-edit {
+            background-color: #f1c40f;
+            color: black;
+        }
 
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    background-color: #2a2a40;
-}
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #2a2a40;
+        }
 
-.table th, .table td {
-    padding: 12px;
-    border: 1px solid #444;
-    text-align: center;
-}
+        .table th, .table td {
+            padding: 12px;
+            border: 1px solid #444;
+            text-align: center;
+        }
 
-.table th {
-    background-color: #333;
-}
+        .table th {
+            background-color: #333;
+        }
 
-.btn-load {
-    background-color: #2ecc71;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    margin-top: 10px;
-}
-
-.search-bar {
-    width: 100%;
-    padding: 10px;
-    background-color: #333;
-    border: 1px solid #555;
-    border-radius: 5px;
-    color: white;
-}
-
+        .search-bar {
+            width: 100%;
+            padding: 10px;
+            background-color: white !important;
+            border: 1px solid #555;
+            border-radius: 5px;
+            color: black !important;
+        }
     </style>
 </head>
 <body>
@@ -107,12 +98,12 @@ button {
     <h1 class="text-center mb-4">Mis videojuegos</h1>
 
     <div class="card p-4 mb-4">
-        <h5>Agregar nuevo videojuego</h5>
+        <h5>Agregar / Editar videojuego</h5>
         <input type="text" id="titulo" class="form-control mb-2" placeholder="Título">
         <input type="text" id="consola" class="form-control mb-2" placeholder="Consola">
         <input type="number" id="precio" class="form-control mb-2" placeholder="Precio">
         <input type="number" id="stock" class="form-control mb-2" placeholder="Stock">
-        <button class="btn xbox-green me-2" onclick="guardarVideojuego()">Guardar</button>
+        <button class="btn btn-success me-2" onclick="guardarVideojuego()">Guardar</button>
         <button class="btn btn-secondary" onclick="limpiarFormulario()">Cancelar</button>
     </div>
 
@@ -120,8 +111,6 @@ button {
         <input type="text" id="busqueda" class="form-control" placeholder="Buscar por título o consola" oninput="buscarVideojuego()">
         <button class="btn btn-light mt-2" onclick="limpiarBusqueda()">Limpiar búsqueda</button>
     </div>
-
-    <button class="btn xbox-green mb-3" onclick="cargarVideojuegos()">🔄 Cargar videojuegos</button>
 
     <table class="table table-dark table-striped">
         <thead>
@@ -140,6 +129,7 @@ button {
 
 <script>
     const API = "http://127.0.0.1:8000/videojuegos/";
+    let idEnEdicion = null;
 
     async function guardarVideojuego() {
         const titulo = document.getElementById("titulo").value;
@@ -147,18 +137,23 @@ button {
         const precio = parseFloat(document.getElementById("precio").value);
         const stock = parseInt(document.getElementById("stock").value);
 
-        const response = await fetch(API, {
-            method: "POST",
+        const datos = { titulo, consola, precio, stock };
+
+        const metodo = idEnEdicion ? "PUT" : "POST";
+        const url = idEnEdicion ? API + idEnEdicion : API;
+
+        const response = await fetch(url, {
+            method: metodo,
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ titulo, consola, precio, stock }),
+            body: JSON.stringify(datos),
         });
 
         if (response.ok) {
-            alert("Videojuego guardado correctamente");
+            alert(idEnEdicion ? "Videojuego actualizado" : "Videojuego guardado correctamente");
             limpiarFormulario();
             cargarVideojuegos();
         } else {
-            alert("Hubo un error al guardar el videojuego.");
+            alert("Error al guardar o actualizar el videojuego.");
         }
     }
 
@@ -193,6 +188,7 @@ button {
         document.getElementById("consola").value = "";
         document.getElementById("precio").value = "";
         document.getElementById("stock").value = "";
+        idEnEdicion = null;
     }
 
     async function eliminar(id) {
@@ -218,6 +214,18 @@ button {
     function limpiarBusqueda() {
         document.getElementById("busqueda").value = "";
         buscarVideojuego();
+    }
+
+    function editar(id) {
+        fetch(API + id)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("titulo").value = data.titulo;
+                document.getElementById("consola").value = data.consola;
+                document.getElementById("precio").value = data.precio;
+                document.getElementById("stock").value = data.stock;
+                idEnEdicion = id;
+            });
     }
 
     cargarVideojuegos();
